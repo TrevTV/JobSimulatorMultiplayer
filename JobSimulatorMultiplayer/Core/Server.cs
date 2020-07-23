@@ -197,9 +197,9 @@ namespace JobSimulatorMultiplayer.Core
 
             foreach (var pair in ObjectIDManager.objects)
             {
-                if (!syncedObjectCache.ContainsKey(pair.Value))
-                    syncedObjectCache.Add(pair.Value, pair.Value.GetComponent<ServerSyncedObject>());
-                ServerSyncedObject sso = syncedObjectCache[pair.Value];
+                if (!syncedObjectCache.ContainsKey(pair.Value.gameObject))
+                    syncedObjectCache.Add(pair.Value.gameObject, pair.Value.GetComponent<ServerSyncedObject>());
+                ServerSyncedObject sso = syncedObjectCache[pair.Value.gameObject];
                 if (sso.NeedsSync())
                 {
 

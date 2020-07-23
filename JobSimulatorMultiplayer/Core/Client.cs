@@ -207,14 +207,14 @@ namespace JobSimulatorMultiplayer.Core
                             {
                                 IDAllocationMessage iam = new IDAllocationMessage(msg);
                                 GameObject obj = Util.GetObjectFromFullPath(iam.namePath);
-                                ObjectIDManager.AddObject(iam.allocatedId, obj);
+                                ObjectIDManager.AddObject(iam.allocatedId, obj.GetComponent<ServerSyncedObject>());
                                 obj.AddComponent<IDHolder>().ID = iam.allocatedId;
                                 break;
                             }
                         case MessageType.ObjectSync:
                             {
                                 ObjectSyncMessage osm = new ObjectSyncMessage(msg);
-                                GameObject obj = ObjectIDManager.GetObject(osm.id);
+                                GameObject obj = ObjectIDManager.GetObject(osm.id).gameObject;
 
                                 if (!obj)
                                 {

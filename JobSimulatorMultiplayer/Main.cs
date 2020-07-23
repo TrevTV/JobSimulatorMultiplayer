@@ -4,6 +4,8 @@ using UnityEngine.SceneManagement;
 using Steamworks;
 using JobSimulatorMultiplayer.Core;
 using JobSimulatorMultiplayer.Representations;
+using UnhollowerRuntimeLib;
+using JobSimulatorMultiplayer.MonoBehaviours;
 
 namespace JobSimulatorMultiplayer
 {
@@ -29,7 +31,8 @@ namespace JobSimulatorMultiplayer
 
         public override void OnApplicationStart()
         {
-            MelonModLogger.Log("Started");
+            ClassInjector.RegisterTypeInIl2Cpp<ServerSyncedObject>();
+            ClassInjector.RegisterTypeInIl2Cpp<IDHolder>();
 
             ModPrefs.RegisterCategory("MPMod", "Multiplayer Settings");
             ModPrefs.RegisterPrefString("MPMod", "HostSteamID", "0");
@@ -43,6 +46,8 @@ namespace JobSimulatorMultiplayer
             client = new Client();
             server = new Server();
             PlayerRep.LoadPlayer();
+
+            MelonModLogger.Log("MPMod Loaded");
         }
 
         public override void OnUpdate()
@@ -90,6 +95,17 @@ namespace JobSimulatorMultiplayer
 
             if (server.IsRunning)
                 server.Update();
+        }
+
+        public override void OnLevelWasInitialized(int level)
+        {
+            var rbs = GameObject.FindObjectsOfType<Rigidbody>();
+
+            foreach (var rb in rbs)
+            {
+                rb.gameObject.AddComponent<ServerSyncedObject>();
+                rb.gameObject.AddComponent<IDHolder>().ID = (short)rb.GetInstanceID();
+            }
         }
 
         public override void OnApplicationQuit()

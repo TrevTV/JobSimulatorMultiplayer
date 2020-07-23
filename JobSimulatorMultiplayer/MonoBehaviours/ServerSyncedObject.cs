@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace JobSimulatorMultiplayer.MonoBehaviours
 {
-    class ServerSyncedObject : MonoBehaviour
+    public class ServerSyncedObject : MonoBehaviour
     {
         public ServerSyncedObject(IntPtr ptr) : base(ptr) { }
         public Vector3 lastSyncedPos = Vector3.zero;
