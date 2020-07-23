@@ -103,8 +103,8 @@ namespace JobSimulatorMultiplayer
 
             foreach (var rb in rbs)
             {
-                rb.gameObject.AddComponent<ServerSyncedObject>();
-                rb.gameObject.AddComponent<IDHolder>().ID = (short)rb.GetInstanceID();
+                var sso = rb.gameObject.AddComponent<ServerSyncedObject>();
+                ObjectIDManager.AddObject((byte)rb.GetInstanceID(), sso);
             }
         }
 
