@@ -200,10 +200,5 @@ namespace JobSimulatorMultiplayer.Core
             byte[] msgBytes = msg.GetBytes();
             SteamNetworking.SendP2PPacket(ServerId, msgBytes, msgBytes.Length, 0, send);
         }
-
-        private void SendToServer(INetworkMessage msg, P2PSend send)
-        {
-            SendToServer(msg.MakeMsg(), send);
-        }
     }
 }

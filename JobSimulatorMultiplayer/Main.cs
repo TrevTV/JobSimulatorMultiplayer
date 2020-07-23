@@ -4,7 +4,6 @@ using UnityEngine.SceneManagement;
 using Steamworks;
 using JobSimulatorMultiplayer.Core;
 using JobSimulatorMultiplayer.Representations;
-using Harmony;
 
 namespace JobSimulatorMultiplayer
 {
@@ -31,6 +30,9 @@ namespace JobSimulatorMultiplayer
         public override void OnApplicationStart()
         {
             MelonModLogger.Log("Started");
+
+            ModPrefs.RegisterCategory("MPMod", "Multiplayer Settings");
+            ModPrefs.RegisterPrefString("MPMod", "HostSteamID", "0");
 
             SteamClient.Init(448280);
 

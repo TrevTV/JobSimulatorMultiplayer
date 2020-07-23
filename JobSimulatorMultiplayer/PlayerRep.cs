@@ -2,8 +2,6 @@
 using MelonLoader;
 using UnityEngine;
 using static UnityEngine.Object;
-using JobSimulatorMultiplayer.Structs;
-using System.IO;
 
 namespace JobSimulatorMultiplayer.Representations
 {
@@ -19,11 +17,11 @@ namespace JobSimulatorMultiplayer.Representations
 
         public static void LoadPlayer()
         {
-            bundle = AssetBundle.LoadFromFile(Directory.GetCurrentDirectory() + "\\playermodels.mp");
+            bundle = AssetBundle.LoadFromFile("playermodels.mp");
             if (bundle == null)
                 MelonModLogger.LogError("Failed to load the asset bundle");
 
-            GameObject prefab = bundle.LoadAsset("Assets/models.prefab").Cast<GameObject>();
+            GameObject prefab = bundle.LoadAsset("Assets/Player.prefab").Cast<GameObject>();
             if (prefab == null)
                 MelonModLogger.LogError("Failed to load models from the asset bundle???");
         }

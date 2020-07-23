@@ -5,6 +5,8 @@ VisualStudioVersion = 16.0.30128.74
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JobSimulatorMultiplayer", "JobSimulatorMultiplayer\JobSimulatorMultiplayer.csproj", "{C33921DC-5778-4EEC-A2D0-E0AE522CC701}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Facepunch.Steamworks.Win64", "Facepunch.Steamworks\Facepunch.Steamworks.Win64.csproj", "{12454E96-D58A-4F7E-A2E6-AF6D517112B7}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +17,10 @@ Global
 		{C33921DC-5778-4EEC-A2D0-E0AE522CC701}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C33921DC-5778-4EEC-A2D0-E0AE522CC701}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C33921DC-5778-4EEC-A2D0-E0AE522CC701}.Release|Any CPU.Build.0 = Release|Any CPU
+		{12454E96-D58A-4F7E-A2E6-AF6D517112B7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{12454E96-D58A-4F7E-A2E6-AF6D517112B7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{12454E96-D58A-4F7E-A2E6-AF6D517112B7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{12454E96-D58A-4F7E-A2E6-AF6D517112B7}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
