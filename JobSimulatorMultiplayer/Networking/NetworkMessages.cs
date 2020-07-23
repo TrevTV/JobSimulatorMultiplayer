@@ -15,7 +15,10 @@ namespace JobSimulatorMultiplayer.Networking
         JoinRejected,
         SceneTransition,
         SetPartyId,
-        SetServerSetting
+        SetServerSetting,
+        IdAllocation,
+        IdRequest,
+        ObjectSync
     }
 
     public interface INetworkMessage
@@ -231,6 +234,87 @@ namespace JobSimulatorMultiplayer.Networking
             P2PMessage msg = new P2PMessage();
             msg.WriteByte((byte)MessageType.SetPartyId);
             msg.WriteUnicodeString(partyId);
+            return msg;
+        }
+    }
+
+    public class IDAllocationMessage : INetworkMessage
+    {
+        public string namePath;
+        public byte allocatedId;
+
+        public IDAllocationMessage()
+        {
+
+        }
+
+        public IDAllocationMessage(P2PMessage msg)
+        {
+            namePath = msg.ReadUnicodeString();
+            allocatedId = msg.ReadByte();
+        }
+
+        public P2PMessage MakeMsg()
+        {
+            P2PMessage msg = new P2PMessage();
+
+            msg.WriteByte((byte)MessageType.IdAllocation);
+            msg.WriteUnicodeString(namePath);
+            msg.WriteByte(allocatedId);
+
+            return msg;
+        }
+    }
+
+    public class IDRequestMessage : INetworkMessage
+    {
+        public string namePath;
+
+        public IDRequestMessage()
+        {
+
+        }
+
+        public IDRequestMessage(P2PMessage msg)
+        {
+            namePath = msg.ReadUnicodeString();
+        }
+
+        public P2PMessage MakeMsg()
+        {
+            P2PMessage msg = new P2PMessage();
+
+            msg.WriteByte((byte)MessageType.IdRequest);
+            msg.WriteUnicodeString(namePath);
+
+            return msg;
+        }
+    }
+
+    public class ObjectSyncMessage : INetworkMessage
+    {
+        public byte id;
+        public Vector3 position;
+        public Quaternion rotation;
+
+        public ObjectSyncMessage()
+        { }
+
+        public ObjectSyncMessage(P2PMessage msg)
+        {
+            id = msg.ReadByte();
+            position = msg.ReadVector3();
+            rotation = msg.ReadCompressedQuaternion();
+        }
+
+        public P2PMessage MakeMsg()
+        {
+            P2PMessage msg = new P2PMessage();
+            msg.WriteByte((byte)MessageType.ObjectSync);
+            msg.WriteByte(id);
+            msg.WriteVector3(position);
+            msg.WriteCompressedQuaternion(rotation);
+
             return msg;
         }
     }

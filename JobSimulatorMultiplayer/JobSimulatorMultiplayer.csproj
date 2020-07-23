@@ -84,14 +84,19 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Core\Client.cs" />
+    <Compile Include="Core\ObjectIDManager.cs" />
     <Compile Include="Core\Server.cs" />
     <Compile Include="Main.cs" />
+    <Compile Include="MonoBehaviours\IDHolder.cs" />
+    <Compile Include="MonoBehaviours\ServerSyncedObject.cs" />
     <Compile Include="Networking\NetworkMessages.cs" />
     <Compile Include="Networking\P2PMessage.cs" />
     <Compile Include="PlayerRep.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Structs\RigTransforms.cs" />
+    <Compile Include="Util.cs" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>COPY "$(TargetPath)" "C:\Program Files (x86)\Steam\steamapps\common\Job Simulator\Mods"</PostBuildEvent>

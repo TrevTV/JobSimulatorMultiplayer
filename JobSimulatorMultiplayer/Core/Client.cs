@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Net.Configuration;
 using UnityEngine;
+using JobSimulatorMultiplayer.MonoBehaviours;
 
 namespace JobSimulatorMultiplayer.Core
 {
@@ -202,6 +203,30 @@ namespace JobSimulatorMultiplayer.Core
                                 playerObjects.Add(cjm.playerId, new PlayerRep(cjm.name, cjm.steamId));
                                 break;
                             }
+                        case MessageType.IdAllocation:
+                            {
+                                IDAllocationMessage iam = new IDAllocationMessage(msg);
+                                GameObject obj = Util.GetObjectFromFullPath(iam.namePath);
+                                ObjectIDManager.AddObject(iam.allocatedId, obj);
+                                obj.AddComponent<IDHolder>().ID = iam.allocatedId;
+                                break;
+                            }
+                        case MessageType.ObjectSync:
+                            {
+                                ObjectSyncMessage osm = new ObjectSyncMessage(msg);
+                                GameObject obj = ObjectIDManager.GetObject(osm.id);
+
+                                if (!obj)
+                                {
+                                    MelonModLogger.LogError($"Couldn't find object with ID {osm.id}");
+                                }
+                                else
+                                {
+                                    obj.transform.position = osm.position;
+                                    obj.transform.rotation = osm.rotation;
+                                }
+                                break;
+                            }
                     }
                 }
 
@@ -222,8 +247,8 @@ namespace JobSimulatorMultiplayer.Core
                         rHandPos = GlobalStorage.Instance.MasterHMDAndInputController.RightHand.cfjTransform.position,
                         
                         headRot = GlobalStorage.Instance.MasterHMDAndInputController.camTransform.rotation,
-                        lHandRot = Quaternion.Inverse(GlobalStorage.Instance.MasterHMDAndInputController.LeftHand.cfjTransform.rotation),
-                        rHandRot = Quaternion.Inverse(GlobalStorage.Instance.MasterHMDAndInputController.RightHand.cfjTransform.rotation),
+                        lHandRot = GlobalStorage.Instance.MasterHMDAndInputController.LeftHand.cfjTransform.rotation,
+                        rHandRot = GlobalStorage.Instance.MasterHMDAndInputController.RightHand.cfjTransform.rotation,
                     };
 
                     SendToServer(ppm.MakeMsg(), P2PSend.Unreliable);

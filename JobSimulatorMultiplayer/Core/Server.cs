@@ -6,6 +6,8 @@ using System.Collections.Generic;
 using JobSimulatorMultiplayer.Representations;
 using JobSimulatorMultiplayer.Networking;
 using UnityEngine.SceneManagement;
+using JobSimulatorMultiplayer.MonoBehaviours;
+using UnityEngine;
 
 namespace JobSimulatorMultiplayer.Core
 {
@@ -16,6 +18,7 @@ namespace JobSimulatorMultiplayer.Core
         private readonly List<ulong> players = new List<ulong>();
         private readonly Dictionary<SteamId, byte> smallPlayerIds = new Dictionary<SteamId, byte>(JobSimulatorMultiplayer.MAX_PLAYERS);
         private readonly Dictionary<byte, SteamId> largePlayerIds = new Dictionary<byte, SteamId>(JobSimulatorMultiplayer.MAX_PLAYERS);
+        private readonly Dictionary<GameObject, ServerSyncedObject> syncedObjectCache = new Dictionary<GameObject, ServerSyncedObject>();
         private string partyId = "";
         private byte smallIdCounter = 0;
 
@@ -161,6 +164,13 @@ namespace JobSimulatorMultiplayer.Core
                                 }
                                 break;
                             }
+                        case MessageType.IdRequest:
+                            {
+                                IDRequestMessage idrqm = new IDRequestMessage(msg);
+                                MelonModLogger.Log("ID request: " + idrqm.namePath);
+                                Util.GetObjectFromFullPath(idrqm.namePath);
+                                break;
+                            }
                         default:
                             MelonModLogger.Log("Unknown message type: " + type.ToString());
                             break;
@@ -183,6 +193,17 @@ namespace JobSimulatorMultiplayer.Core
                 };
 
                 ServerSendToAll(ppm, P2PSend.Unreliable);
+            }
+
+            foreach (var pair in ObjectIDManager.objects)
+            {
+                if (!syncedObjectCache.ContainsKey(pair.Value))
+                    syncedObjectCache.Add(pair.Value, pair.Value.GetComponent<ServerSyncedObject>());
+                ServerSyncedObject sso = syncedObjectCache[pair.Value];
+                if (sso.NeedsSync())
+                {
+
+                }
             }
         }
 
