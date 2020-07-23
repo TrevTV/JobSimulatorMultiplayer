@@ -1,13 +1,11 @@
 ﻿using JobSimulatorMultiplayer.Networking;
-using MelonLoader;
 using JobSimulatorMultiplayer.Representations;
+using MelonLoader;
 using Steamworks;
 using Steamworks.Data;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Net.Configuration;
 using UnityEngine;
 
 namespace JobSimulatorMultiplayer.Core
@@ -154,6 +152,25 @@ namespace JobSimulatorMultiplayer.Core
 
                                 break;
                             }
+                        case MessageType.PlayerPosition:
+                            {
+                                PlayerPositionMessage ppm = new PlayerPositionMessage(msg);
+
+                                if (playerObjects.ContainsKey(ppm.playerId))
+                                {
+                                    PlayerRep pr = GetPlayerRep(ppm.playerId);
+
+                                    pr.head.transform.position = ppm.headPos;
+                                    pr.handL.transform.position = ppm.lHandPos;
+                                    pr.handR.transform.position = ppm.rHandPos;
+
+                                    pr.head.transform.rotation = ppm.headRot;
+                                    pr.handL.transform.rotation = ppm.lHandRot;
+                                    pr.handR.transform.rotation = ppm.rHandRot;
+                                }
+
+                                break;
+                            }
                         case MessageType.ServerShutdown:
                             {
                                 foreach (PlayerRep pr in playerObjects.Values)
@@ -186,6 +203,30 @@ namespace JobSimulatorMultiplayer.Core
                                 break;
                             }
                     }
+                }
+
+                /*MelonModLogger.Log($@"---------------------
+                                    SteamID: self
+                                    LeftHand: {GlobalStorage.Instance.MasterHMDAndInputController.TrackedLeftHandTransform.transform.position.ToString()}
+                                    RightHand: {GlobalStorage.Instance.MasterHMDAndInputController.TrackedRightHandTransform.position.ToString()}
+                                    Head: {GlobalStorage.Instance.MasterHMDAndInputController.Head.transform.position.ToString()}
+                                    ---------------------");*/
+            }
+            {
+                if (GlobalStorage.Instance.MasterHMDAndInputController != null)
+                {
+                    PlayerPositionMessage ppm = new PlayerPositionMessage
+                    {
+                        headPos = GlobalStorage.Instance.MasterHMDAndInputController.camTransform.position,
+                        lHandPos = GlobalStorage.Instance.MasterHMDAndInputController.LeftHand.cfjTransform.position,
+                        rHandPos = GlobalStorage.Instance.MasterHMDAndInputController.RightHand.cfjTransform.position,
+                        
+                        headRot = GlobalStorage.Instance.MasterHMDAndInputController.camTransform.rotation,
+                        lHandRot = Quaternion.Inverse(GlobalStorage.Instance.MasterHMDAndInputController.LeftHand.cfjTransform.rotation),
+                        rHandRot = Quaternion.Inverse(GlobalStorage.Instance.MasterHMDAndInputController.RightHand.cfjTransform.rotation),
+                    };
+
+                    SendToServer(ppm.MakeMsg(), P2PSend.Unreliable);
                 }
             }
         }

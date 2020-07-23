@@ -122,6 +122,45 @@ namespace JobSimulatorMultiplayer.Core
                                 smallPlayerIds.Remove(packet.Value.SteamId);
                                 break;
                             }
+                        case MessageType.PlayerPosition:
+                            {
+                                if (smallPlayerIds.ContainsKey(packet.Value.SteamId))
+                                {
+                                    byte playerId = smallPlayerIds[packet.Value.SteamId];
+                                    PlayerRep pr = GetPlayerRep(playerId);
+
+                                    PlayerPositionMessage ppm = new PlayerPositionMessage(msg);
+                                    pr.head.transform.position = ppm.headPos;
+                                    pr.handL.transform.position = ppm.lHandPos;
+                                    pr.handR.transform.position = ppm.rHandPos;
+
+                                    /*MelonModLogger.Log($@"---------------------
+                                    SteamID: {pr.steamId.ToString()}
+                                    LeftHand: {pr.handL.transform.position.ToString()}
+                                    RightHand: {pr.handR.transform.position.ToString()}
+                                    Head: {pr.head.transform.position.ToString()}
+                                    ---------------------");*/
+
+                                    pr.head.transform.rotation = ppm.headRot;
+                                    pr.handL.transform.rotation = ppm.lHandRot;
+                                    pr.handR.transform.rotation = ppm.rHandRot;
+
+                                    OtherPlayerPositionMessage relayOPPM = new OtherPlayerPositionMessage
+                                    {
+                                        headPos = ppm.headPos,
+                                        lHandPos = ppm.lHandPos,
+                                        rHandPos = ppm.rHandPos,
+    
+
+                                        headRot = ppm.headRot,
+                                        lHandRot = ppm.lHandRot,
+                                        rHandRot = ppm.rHandRot,
+                                        playerId = ppm.playerId
+                                    };
+                                    ServerSendToAllExcept(relayOPPM, P2PSend.Unreliable, packet.Value.SteamId);
+                                }
+                                break;
+                            }
                         default:
                             MelonModLogger.Log("Unknown message type: " + type.ToString());
                             break;
@@ -129,11 +168,32 @@ namespace JobSimulatorMultiplayer.Core
 
                 }
             }
+
+            if (GlobalStorage.Instance.MasterHMDAndInputController != null)
+            {
+                PlayerPositionMessage ppm = new PlayerPositionMessage
+                {
+                    headPos = GlobalStorage.Instance.MasterHMDAndInputController.camTransform.position,
+                    lHandPos = GlobalStorage.Instance.MasterHMDAndInputController.LeftHand.cfjTransform.position,
+                    rHandPos = GlobalStorage.Instance.MasterHMDAndInputController.RightHand.cfjTransform.position,
+
+                    headRot = GlobalStorage.Instance.MasterHMDAndInputController.camTransform.rotation,
+                    lHandRot = GlobalStorage.Instance.MasterHMDAndInputController.LeftHand.cfjTransform.rotation,
+                    rHandRot = GlobalStorage.Instance.MasterHMDAndInputController.RightHand.cfjTransform.rotation,
+                };
+
+                ServerSendToAll(ppm, P2PSend.Unreliable);
+            }
+        }
+
+        private PlayerRep GetPlayerRep(byte playerId)
+        {
+            return playerObjects[playerId];
         }
 
         private void OnP2PSessionRequest(SteamId id)
         {
-            SteamNetworking.AcceptP2PSessionWithUser(id);
+            SteamNetworking.AcceptP2PSessionWithUser(id); // confirmed returns true
             MelonModLogger.Log("Accepted session for " + id.ToString());
         }
 

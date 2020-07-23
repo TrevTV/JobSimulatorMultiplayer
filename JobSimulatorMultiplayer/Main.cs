@@ -10,9 +10,9 @@ namespace JobSimulatorMultiplayer
     public static class BuildInfo
     {
         public const string Name = "JobSimulatorMultiplayer"; // Name of the Mod.  (MUST BE SET)
-        public const string Author = "L4rs & TrevTV"; // Author of the Mod.  (Set as null if none)
+        public const string Author = "L4rs/TrevTV/Someone Somewhere"; // Author of the Mod.  (Set as null if none)
         public const string Company = null; // Company that made the Mod.  (Set as null if none)
-        public const string Version = "0.0.0"; // Version of the Mod.  (MUST BE SET)
+        public const string Version = "0.0.1"; // Version of the Mod.  (MUST BE SET)
         public const string DownloadLink = null; // Download Link for the Mod.  (Set as null if none)
     }
 

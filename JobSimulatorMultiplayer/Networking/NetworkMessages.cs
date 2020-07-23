@@ -71,6 +71,8 @@ namespace JobSimulatorMultiplayer.Networking
     // Client player -> server
     public class PlayerPositionMessage : INetworkMessage
     {
+        public byte playerId;
+
         public Vector3 headPos;
         public Vector3 lHandPos;
         public Vector3 rHandPos;
@@ -81,6 +83,8 @@ namespace JobSimulatorMultiplayer.Networking
 
         public PlayerPositionMessage(P2PMessage msg)
         {
+            playerId = msg.ReadByte();
+
             headPos = msg.ReadVector3();
             lHandPos = msg.ReadVector3();
             rHandPos = msg.ReadVector3();
@@ -97,6 +101,7 @@ namespace JobSimulatorMultiplayer.Networking
         {
             P2PMessage msg = new P2PMessage();
             msg.WriteByte((byte)MessageType.PlayerPosition);
+            msg.WriteByte(playerId);
 
             msg.WriteVector3(headPos);
             msg.WriteVector3(lHandPos);
