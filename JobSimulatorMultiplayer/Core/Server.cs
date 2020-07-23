@@ -167,8 +167,8 @@ namespace JobSimulatorMultiplayer.Core
                         case MessageType.IdRequest:
                             {
                                 IDRequestMessage idrqm = new IDRequestMessage(msg);
-                                MelonModLogger.Log("ID request: " + idrqm.namePath);
-                                Util.GetObjectFromFullPath(idrqm.namePath);
+                                MelonModLogger.Log("ID request: " + idrqm.name);
+                                Util.GetObjectFromFullPath(idrqm.name);
                                 break;
                             }
                         default:

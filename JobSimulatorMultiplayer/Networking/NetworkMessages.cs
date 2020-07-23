@@ -268,7 +268,7 @@ namespace JobSimulatorMultiplayer.Networking
 
     public class IDRequestMessage : INetworkMessage
     {
-        public string namePath;
+        public string name;
 
         public IDRequestMessage()
         {
@@ -277,7 +277,7 @@ namespace JobSimulatorMultiplayer.Networking
 
         public IDRequestMessage(P2PMessage msg)
         {
-            namePath = msg.ReadUnicodeString();
+            name = msg.ReadUnicodeString();
         }
 
         public P2PMessage MakeMsg()
@@ -285,7 +285,7 @@ namespace JobSimulatorMultiplayer.Networking
             P2PMessage msg = new P2PMessage();
 
             msg.WriteByte((byte)MessageType.IdRequest);
-            msg.WriteUnicodeString(namePath);
+            msg.WriteUnicodeString(name);
 
             return msg;
         }
