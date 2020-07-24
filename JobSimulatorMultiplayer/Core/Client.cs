@@ -310,6 +310,9 @@ namespace JobSimulatorMultiplayer.Core
             foreach (var pair in ObjectIDManager.objects)
             {
                 ServerSyncedObject sso = pair.Value;
+                if (!sso)
+                    ObjectIDManager.objects.Remove(sso.IDHolder.ID);
+
                 if (sso.NeedsSync())
                 {
                     // Sync it

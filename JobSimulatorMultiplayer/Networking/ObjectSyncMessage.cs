@@ -2,6 +2,7 @@
 using OwlchemyVR;
 using System.Collections.Generic;
 using System;
+using MelonLoader;
 
 namespace JobSimulatorMultiplayer.Networking
 {
@@ -27,6 +28,7 @@ namespace JobSimulatorMultiplayer.Networking
         public P2PMessage MakeMsg()
         {
             P2PMessage msg = new P2PMessage();
+            msg.WriteByte((byte)MessageType.ObjectSync);
             msg.WriteSyncDict(objectsToSync);
             return msg;
         }

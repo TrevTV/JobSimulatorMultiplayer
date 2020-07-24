@@ -60,9 +60,6 @@
     <Reference Include="UnhollowerRuntimeLib">
       <HintPath>D:\Program Files (x86)\Steam\steamapps\common\Job Simulator\MelonLoader\Managed\UnhollowerRuntimeLib.dll</HintPath>
     </Reference>
-    <Reference Include="UnityEngine">
-      <HintPath>D:\Program Files (x86)\Steam\steamapps\common\Job Simulator\MelonLoader\Managed\UnityEngine.dll</HintPath>
-    </Reference>
     <Reference Include="UnityEngine.AssetBundleModule">
       <HintPath>D:\Program Files (x86)\Steam\steamapps\common\Job Simulator\MelonLoader\Managed\UnityEngine.AssetBundleModule.dll</HintPath>
     </Reference>

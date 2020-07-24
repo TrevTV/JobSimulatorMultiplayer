@@ -126,7 +126,7 @@ namespace JobSimulatorMultiplayer
             var rbs = FindObjectsOfType<Rigidbody>();
             foreach (var rb in rbs)
             {
-                if (rb.gameObject.transform.root.gameObject.name.Contains("HMD"))
+                if (rb.gameObject.transform.root.gameObject.name.Contains("HMD") || rb.isKinematic == true)
                     continue;
                 
                 var sso = rb.gameObject.AddComponent<ServerSyncedObject>();
