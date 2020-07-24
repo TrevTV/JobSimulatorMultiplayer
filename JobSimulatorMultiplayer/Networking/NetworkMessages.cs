@@ -18,7 +18,8 @@ namespace JobSimulatorMultiplayer.Networking
         SetServerSetting,
         IdAllocation,
         IdRequest,
-        ObjectSync
+        ObjectSync,
+        WorldItemData
     }
 
     public interface INetworkMessage

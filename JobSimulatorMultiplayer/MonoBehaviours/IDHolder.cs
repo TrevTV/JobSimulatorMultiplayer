@@ -7,5 +7,7 @@ namespace JobSimulatorMultiplayer.MonoBehaviours
     {
         public IDHolder(IntPtr ptr) : base(ptr) { }
         public int ID;
+        public string ItemFullName;
+        public string ItemName;
     }
 }

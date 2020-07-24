@@ -9,6 +9,8 @@ using UnityEngine;
 using JobSimulatorMultiplayer.MonoBehaviours;
 using Discord;
 using OwlchemyVR;
+using System.Linq;
+using Il2CppSystem.Diagnostics.Tracing;
 
 namespace JobSimulatorMultiplayer.Core
 {
@@ -119,6 +121,9 @@ namespace JobSimulatorMultiplayer.Core
             SteamNetworking.CloseP2PSessionWithUser(ServerId);
             //PlayerHooks.OnPlayerGrabObject -= PlayerHooks_OnPlayerGrabObject;
             //PlayerHooks.OnPlayerLetGoObject -= PlayerHooks_OnPlayerLetGoObject;
+
+            RichPresence.OnJoin -= RichPresence_OnJoin;
+            RichPresence.SetActivity(new Activity() { Details = "Idle", Assets = { LargeImage = "jobsim" } });
         }
 
         public void Update()
@@ -150,6 +155,13 @@ namespace JobSimulatorMultiplayer.Core
                                     pr.head.transform.rotation = oppm.headRot;
                                     pr.handL.transform.rotation = oppm.lHandRot;
                                     pr.handR.transform.rotation = oppm.rHandRot;
+
+                                    MelonModLogger.Log($@"oppm-----------------    
+                                    SteamID: {oppm.playerId}
+                                    LeftHand: {oppm.lHandPos.ToString()}    
+                                    RightHand: {oppm.rHandPos.ToString()}    
+                                    Head: {oppm.headPos.ToString()}    
+                                    ---------------------");
                                 }
 
                                 break;
@@ -169,6 +181,13 @@ namespace JobSimulatorMultiplayer.Core
                                     pr.head.transform.rotation = ppm.headRot;
                                     pr.handL.transform.rotation = ppm.lHandRot;
                                     pr.handR.transform.rotation = ppm.rHandRot;
+
+                                    MelonModLogger.Log($@"ppm------------------    
+                                    SteamID: {ppm.playerId}
+                                    LeftHand: {ppm.lHandPos.ToString()}    
+                                    RightHand: {ppm.rHandPos.ToString()}    
+                                    Head: {ppm.headPos.ToString()}    
+                                    ---------------------");
                                 }
 
                                 break;
@@ -204,29 +223,28 @@ namespace JobSimulatorMultiplayer.Core
                                 playerObjects.Add(cjm.playerId, new PlayerRep(cjm.name, cjm.steamId));
                                 break;
                             }
-                        case MessageType.IdAllocation:
-                            {
-                                IDAllocationMessage iam = new IDAllocationMessage(msg);
-                                GameObject obj = Util.GetObjectFromFullPath(iam.namePath);
-                                ObjectIDManager.AddObject(obj.GetComponent<WorldItem>(), obj.GetComponent<ServerSyncedObject>());
-                                obj.AddComponent<IDHolder>().ID = iam.allocatedId;
-                                break;
-                            }
                         case MessageType.ObjectSync:
                             {
                                 ObjectSyncMessage osm = new ObjectSyncMessage(msg);
-                                GameObject obj = ObjectIDManager.GetObject(osm.worldItem).gameObject;
 
-                                MelonModLogger.Log($"got sync message with worlditem: {obj.name}");
+                                for (int i = 0; i < osm.objectsToSync.Count; i++)
+                                {
+                                    GameObject obj = ObjectIDManager.GetObject(osm.objectsToSync.Keys.ToList()[i]).gameObject; //now we gotta make the list
 
-                                if (!obj)
-                                {
-                                    MelonModLogger.LogError($"Couldn't find object with ID {obj.name}");
-                                }
-                                else
-                                {
-                                    obj.transform.position = osm.position;
-                                    obj.transform.rotation = osm.rotation;
+                                    if (!obj.GetComponent<ServerSyncedObject>().NeedsSync())
+                                        continue;
+
+                                    if (!obj)
+                                    {
+                                        MelonModLogger.LogError($"Couldn't find object with ID {obj.name}");
+                                    }
+                                    else
+                                    {
+                                        obj.transform.position = osm.objectsToSync.Values.ToList()[i].Item1;
+                                        obj.transform.rotation = osm.objectsToSync.Values.ToList()[i].Item2;
+                                    }
+
+                                    MelonModLogger.Log($"got sync message with id: {obj.name}");
                                 }
                                 break;
                             }
@@ -262,7 +280,7 @@ namespace JobSimulatorMultiplayer.Core
                         headPos = GlobalStorage.Instance.MasterHMDAndInputController.camTransform.position,
                         lHandPos = GlobalStorage.Instance.MasterHMDAndInputController.LeftHand.cfjTransform.position,
                         rHandPos = GlobalStorage.Instance.MasterHMDAndInputController.RightHand.cfjTransform.position,
-                        
+
                         headRot = GlobalStorage.Instance.MasterHMDAndInputController.camTransform.rotation,
                         lHandRot = GlobalStorage.Instance.MasterHMDAndInputController.LeftHand.cfjTransform.rotation,
                         rHandRot = GlobalStorage.Instance.MasterHMDAndInputController.RightHand.cfjTransform.rotation,
@@ -271,23 +289,7 @@ namespace JobSimulatorMultiplayer.Core
                     SendToServer(ppm.MakeMsg(), P2PSend.Unreliable);
                 }
 
-                /*foreach (var pair in ObjectIDManager.objects)
-                {
-                    if (pair.Value.NeedsSync())
-                    {
-                        pair.Value.lastSyncedPos = pair.Value.transform.position;
-                        pair.Value.lastSyncedRotation = pair.Value.transform.rotation;
-
-                        ObjectSyncMessage osm = new ObjectSyncMessage
-                        {
-                            id = pair.Key,
-                            position = pair.Value.transform.position,
-                            rotation = pair.Value.transform.rotation
-                        };
-
-                        SendToServer(osm.MakeMsg(), P2PSend.Unreliable);
-                    }
-                }*/
+                SendSync();
             }
         }
 
@@ -296,10 +298,27 @@ namespace JobSimulatorMultiplayer.Core
             return playerObjects[playerId];
         }
 
-        private void SendToServer(P2PMessage msg, P2PSend send)
+        public void SendToServer(P2PMessage msg, P2PSend send)
         {
             byte[] msgBytes = msg.GetBytes();
             SteamNetworking.SendP2PPacket(ServerId, msgBytes, msgBytes.Length, 0, send);
+        }
+
+        private void SendSync()
+        {
+            ObjectSyncMessage osm = new ObjectSyncMessage();
+            foreach (var pair in ObjectIDManager.objects)
+            {
+                ServerSyncedObject sso = pair.Value;
+                if (sso.NeedsSync())
+                {
+                    // Sync it
+                    pair.Value.lastSyncedPos = pair.Value.transform.position;
+                    pair.Value.lastSyncedRotation = pair.Value.transform.rotation;
+                    osm.objectsToSync.Add(sso.IDHolder.ID, Tuple.Create(sso.gameObject.transform.position, sso.gameObject.transform.rotation));
+                }
+            }
+            SendToServer(osm.MakeMsg(), P2PSend.Unreliable);
         }
     }
 }

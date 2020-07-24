@@ -7,6 +7,7 @@ using Steamworks;
 using Steamworks.Data;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -159,6 +160,13 @@ namespace JobSimulatorMultiplayer.Core
                                     pr.handL.transform.rotation = ppm.lHandRot;
                                     pr.handR.transform.rotation = ppm.rHandRot;
 
+                                    MelonModLogger.Log($@"---------------------    
+                                    SteamID: {pr.steamId.ToString()}
+                                    LeftHand: {ppm.lHandPos.ToString()}    
+                                    RightHand: {ppm.rHandPos.ToString()}    
+                                    Head: {ppm.headPos.ToString()}    
+                                    ---------------------");
+
                                     OtherPlayerPositionMessage relayOPPM = new OtherPlayerPositionMessage
                                     {
                                         headPos = ppm.headPos,
@@ -176,27 +184,27 @@ namespace JobSimulatorMultiplayer.Core
                             }
                         case MessageType.ObjectSync:
                             {
-                                ObjectSyncMessage osm = new ObjectSyncMessage(msg);
-                                GameObject obj = ObjectIDManager.GetObject(osm.worldItem).gameObject;
+                                ObjectSyncMessage osm = new ObjectSyncMessage(msg); // wat, it's from the foreach one, let's make it a void
 
-                                MelonModLogger.Log($"got sync message with id: {obj.name}");
+                                for(int i=0; i < osm.objectsToSync.Count; i++)
+                                {
+                                    GameObject obj = ObjectIDManager.GetObject(osm.objectsToSync.Keys.ToList()[i]).gameObject;
 
-                                if (!obj)
-                                {
-                                    MelonModLogger.LogError($"Couldn't find object with ID {obj.name}");
+                                    if (!obj.GetComponent<ServerSyncedObject>().NeedsSync())
+                                        continue;
+
+                                    if (!obj)
+                                    {
+                                        MelonModLogger.LogError($"Couldn't find object with ID {obj.name}");
+                                    }
+                                    else
+                                    {
+                                        obj.transform.position = osm.objectsToSync.Values.ToList()[i].Item1;
+                                        obj.transform.rotation = osm.objectsToSync.Values.ToList()[i].Item2;
+                                    }
+
+                                    MelonModLogger.Log($"got sync message with id: {obj.name}");
                                 }
-                                else
-                                {
-                                    obj.transform.position = osm.position;
-                                    obj.transform.rotation = osm.rotation;
-                                }
-                                break;
-                            }
-                        case MessageType.IdRequest:
-                            {
-                                IDRequestMessage idrqm = new IDRequestMessage(msg);
-                                MelonModLogger.Log("ID request: " + idrqm.name);
-                                Util.GetObjectFromFullPath(idrqm.name);
                                 break;
                             }
                         default:
@@ -206,9 +214,33 @@ namespace JobSimulatorMultiplayer.Core
                 }
             }
 
+            /*
+            foreach (var pair in ObjectIDManager.objects)
+            {
+                ServerSyncedObject sso = pair.Value;
+                if (sso.NeedsSync())
+                {
+                    // Sync it
+                    pair.Value.lastSyncedPos = pair.Value.transform.position;
+                    pair.Value.lastSyncedRotation = pair.Value.transform.rotation;
+
+                    ObjectSyncMessage osm = new ObjectSyncMessage
+                    {
+                        ID = sso.IDHolder.ID,
+                        position = pair.Value.transform.position,
+                        rotation = pair.Value.transform.rotation
+                    };
+
+                    //ServerSendToAll(osm, P2PSend.Unreliable);
+                }
+            }
+            */
+
+            SendSync();
+
             if (GlobalStorage.Instance.MasterHMDAndInputController != null)
             {
-                PlayerPositionMessage ppm = new PlayerPositionMessage
+                OtherPlayerPositionMessage ppm = new OtherPlayerPositionMessage
                 {
                     headPos = GlobalStorage.Instance.MasterHMDAndInputController.camTransform.position,
                     lHandPos = GlobalStorage.Instance.MasterHMDAndInputController.LeftHand.cfjTransform.position,
@@ -221,44 +253,6 @@ namespace JobSimulatorMultiplayer.Core
 
                 ServerSendToAll(ppm, P2PSend.Unreliable);
             }
-
-            /*foreach(var pair in ObjectIDManager.objects)
-            {
-                if (pair.Value.NeedsSync())
-                {
-                    pair.Value.lastSyncedPos = pair.Value.transform.position;
-                    pair.Value.lastSyncedRotation = pair.Value.transform.rotation;
-
-                    ObjectSyncMessage osm = new ObjectSyncMessage
-                    {
-                        id = pair.Key,
-                        position = pair.Value.transform.position,
-                        rotation = pair.Value.transform.rotation
-                    };
-
-                    ServerSendToAll(osm, P2PSend.Unreliable);
-                }
-            }*/
-
-            foreach (var pair in ObjectIDManager.objects)
-            {
-                ServerSyncedObject sso = pair.Value;
-                if (sso.NeedsSync())
-                {
-                    // Sync it
-                    pair.Value.lastSyncedPos = pair.Value.transform.position;
-                    pair.Value.lastSyncedRotation = pair.Value.transform.rotation;
-
-                    ObjectSyncMessage osm = new ObjectSyncMessage
-                    {
-                        worldItem = pair.Key,
-                        position = pair.Value.transform.position,
-                        rotation = pair.Value.transform.rotation
-                    };
-
-                    ServerSendToAll(osm, P2PSend.Unreliable);
-                }
-            }
         }
 
         private PlayerRep GetPlayerRep(byte playerId)
@@ -268,7 +262,7 @@ namespace JobSimulatorMultiplayer.Core
 
         private void OnP2PSessionRequest(SteamId id)
         {
-            SteamNetworking.AcceptP2PSessionWithUser(id); // confirmed returns true
+            SteamNetworking.AcceptP2PSessionWithUser(id);
             MelonModLogger.Log("Accepted session for " + id.ToString());
         }
 
@@ -390,6 +384,8 @@ namespace JobSimulatorMultiplayer.Core
 
             SteamNetworking.OnP2PSessionRequest = null;
             SteamNetworking.OnP2PConnectionFailed = null;
+
+            RichPresence.SetActivity(new Activity() { Details = "Idle", Assets = { LargeImage = "jobsim" } });
         }
 
         private void ServerSendToAll(INetworkMessage msg, P2PSend send)
@@ -418,6 +414,23 @@ namespace JobSimulatorMultiplayer.Core
             P2PMessage pMsg = msg.MakeMsg();
             byte[] bytes = pMsg.GetBytes();
             SteamNetworking.SendP2PPacket(id, bytes, bytes.Length, 0, send);
+        }
+
+        private void SendSync()
+        {
+            ObjectSyncMessage osm = new ObjectSyncMessage();
+            foreach (var pair in ObjectIDManager.objects)
+            {
+                ServerSyncedObject sso = pair.Value;
+                if (sso.NeedsSync())
+                {
+                    // Sync it
+                    pair.Value.lastSyncedPos = pair.Value.transform.position;
+                    pair.Value.lastSyncedRotation = pair.Value.transform.rotation;
+                    osm.objectsToSync.Add(sso.IDHolder.ID, Tuple.Create(sso.gameObject.transform.position, sso.gameObject.transform.rotation));
+                }
+            }
+            ServerSendToAll(osm, P2PSend.Unreliable);
         }
     }
 }

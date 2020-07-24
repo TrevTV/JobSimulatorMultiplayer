@@ -97,17 +97,18 @@
     <Compile Include="Discord\LobbyManager.cs" />
     <Compile Include="Discord\StorageManager.cs" />
     <Compile Include="Discord\StoreManager.cs" />
+    <Compile Include="Features\Patches.cs" />
     <Compile Include="Main.cs" />
     <Compile Include="MonoBehaviours\IDHolder.cs" />
     <Compile Include="MonoBehaviours\ServerSyncedObject.cs" />
     <Compile Include="Networking\NetworkMessages.cs" />
+    <Compile Include="Networking\ObjectSyncMessage.cs" />
     <Compile Include="Networking\P2PMessage.cs" />
     <Compile Include="PlayerRep.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Structs\RigTransforms.cs" />
     <Compile Include="Util.cs" />
   </ItemGroup>
-  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>

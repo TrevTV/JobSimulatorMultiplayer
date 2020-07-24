@@ -1,6 +1,8 @@
 ﻿using OwlchemyVR;
+using Steamworks.Ugc;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using UnityEngine;
 
 namespace JobSimulatorMultiplayer.Networking
@@ -336,6 +338,16 @@ namespace JobSimulatorMultiplayer.Networking
             rPos += length;
 
             return ret;
+        }
+
+        public void WriteSyncDict(Dictionary<int, Tuple<Vector3, Quaternion>> dict)
+        {
+            foreach (var pair in dict)
+            {
+                WriteByte((byte)pair.Key);
+                WriteVector3(pair.Value.Item1);
+                WriteCompressedQuaternion(pair.Value.Item2);
+            }
         }
     }
 }

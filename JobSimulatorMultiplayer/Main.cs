@@ -1,16 +1,11 @@
 ﻿using MelonLoader;
 using UnityEngine;
-using UnityEngine.SceneManagement;
 using Steamworks;
 using JobSimulatorMultiplayer.Core;
 using JobSimulatorMultiplayer.Representations;
 using UnhollowerRuntimeLib;
 using JobSimulatorMultiplayer.MonoBehaviours;
-using Discord;
-using Harmony;
 using System.Collections;
-using PSC;
-using System;
 using static UnityEngine.Object;
 using OwlchemyVR;
 
@@ -33,8 +28,8 @@ namespace JobSimulatorMultiplayer
         public const int MAX_PLAYERS = 16;
         public const byte PROTOCOL_VERSION = 30;
 
-        private Client client;
-        private Server server;
+        public Client client;
+        public Server server;
 
         public override void OnApplicationStart()
         {
@@ -109,7 +104,7 @@ namespace JobSimulatorMultiplayer
 
         public override void OnLevelWasInitialized(int level)
         {
-            // MelonCoroutines.Start(PhysicSyncLoad());
+            MelonCoroutines.Start(PhysicSyncLoad());
         }
 
         public override void OnApplicationQuit()
@@ -123,23 +118,23 @@ namespace JobSimulatorMultiplayer
 
         public IEnumerator PhysicSyncLoad()
         {
-            yield return new WaitForSeconds(5);
-
             ObjectIDManager.objects.Clear();
 
+            yield return new WaitForSeconds(3);
+
             MelonModLogger.Log("Getting and adding all Rigidbodies");
-            var wids = FindObjectsOfType<WorldItem>();
-            foreach (var wid in wids)
+            var rbs = FindObjectsOfType<Rigidbody>();
+            foreach (var rb in rbs)
             {
-                if (wid.gameObject.transform.root.gameObject.name.Contains("HMD") || ObjectIDManager.objects.ContainsKey(wid))
+                if (rb.gameObject.transform.root.gameObject.name.Contains("HMD"))
                     continue;
                 
-                var sso = wid.gameObject.AddComponent<ServerSyncedObject>();
-                var idHolder = wid.gameObject.AddComponent<IDHolder>();
-                //TODO: ID Generation, Syned across Host + Clients
-                idHolder.ID = 1;
-                ObjectIDManager.AddObject(wid, sso);
-                MelonModLogger.Log($"added {wid.gameObject.name}");
+                var sso = rb.gameObject.AddComponent<ServerSyncedObject>();
+                var idHolder = rb.gameObject.AddComponent<IDHolder>();
+
+                idHolder.ID = ObjectIDManager.GenerateID(sso);
+                ObjectIDManager.AddObject(idHolder.ID, sso);
+                MelonModLogger.Log($"added {rb.gameObject.name} with generated id {idHolder.ID.ToString()}");
             }
         }
     }
