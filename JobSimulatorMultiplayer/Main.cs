@@ -6,6 +6,7 @@ using JobSimulatorMultiplayer.Core;
 using JobSimulatorMultiplayer.Representations;
 using UnhollowerRuntimeLib;
 using JobSimulatorMultiplayer.MonoBehaviours;
+using Discord;
 
 namespace JobSimulatorMultiplayer
 {
@@ -31,12 +32,15 @@ namespace JobSimulatorMultiplayer
 
         public override void OnApplicationStart()
         {
+            // Setup MonoBehaviors
             ClassInjector.RegisterTypeInIl2Cpp<ServerSyncedObject>();
             ClassInjector.RegisterTypeInIl2Cpp<IDHolder>();
 
+            // Register Prefs
             ModPrefs.RegisterCategory("MPMod", "Multiplayer Settings");
             ModPrefs.RegisterPrefString("MPMod", "HostSteamID", "0");
 
+            // Start Server Stuff
             SteamClient.Init(448280);
 
             MelonModLogger.Log($"Multiplayer initialising with protocol version {PROTOCOL_VERSION}.");
@@ -47,11 +51,16 @@ namespace JobSimulatorMultiplayer
             server = new Server();
             PlayerRep.LoadPlayer();
 
+            // Setup Discord Presence
+            RichPresence.Initialise(736050983335100436);
+            client.SetupRP();
+
             MelonModLogger.Log("MPMod Loaded");
         }
 
         public override void OnUpdate()
         {
+            RichPresence.Update();
 
             if (!client.isConnected && !server.IsRunning)
             {
@@ -99,13 +108,16 @@ namespace JobSimulatorMultiplayer
 
         public override void OnLevelWasInitialized(int level)
         {
-            var rbs = GameObject.FindObjectsOfType<Rigidbody>();
+            #region Physic Sync
+            ObjectIDManager.objects.Clear();
 
+            var rbs = GameObject.FindObjectsOfType<Rigidbody>();
             foreach (var rb in rbs)
             {
                 var sso = rb.gameObject.AddComponent<ServerSyncedObject>();
-                ObjectIDManager.AddObject((byte)rb.GetInstanceID(), sso);
+                try { ObjectIDManager.AddObject((byte)rb.GetInstanceID(), sso); } catch { }
             }
+            #endregion
         }
 
         public override void OnApplicationQuit()

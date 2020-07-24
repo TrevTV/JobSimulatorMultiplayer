@@ -85,7 +85,15 @@
   <ItemGroup>
     <Compile Include="Core\Client.cs" />
     <Compile Include="Core\ObjectIDManager.cs" />
+    <Compile Include="Core\RichPresence.cs" />
     <Compile Include="Core\Server.cs" />
+    <Compile Include="Discord\ActivityManager.cs" />
+    <Compile Include="Discord\Constants.cs" />
+    <Compile Include="Discord\Core.cs" />
+    <Compile Include="Discord\ImageManager.cs" />
+    <Compile Include="Discord\LobbyManager.cs" />
+    <Compile Include="Discord\StorageManager.cs" />
+    <Compile Include="Discord\StoreManager.cs" />
     <Compile Include="Main.cs" />
     <Compile Include="MonoBehaviours\IDHolder.cs" />
     <Compile Include="MonoBehaviours\ServerSyncedObject.cs" />

@@ -1,13 +1,14 @@
-﻿using Steamworks;
-using Steamworks.Data;
+﻿using Discord;
+using JobSimulatorMultiplayer.MonoBehaviours;
+using JobSimulatorMultiplayer.Networking;
+using JobSimulatorMultiplayer.Representations;
 using MelonLoader;
+using Steamworks;
+using Steamworks.Data;
 using System;
 using System.Collections.Generic;
-using JobSimulatorMultiplayer.Representations;
-using JobSimulatorMultiplayer.Networking;
-using UnityEngine.SceneManagement;
-using JobSimulatorMultiplayer.MonoBehaviours;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 namespace JobSimulatorMultiplayer.Core
 {
@@ -92,6 +93,23 @@ namespace JobSimulatorMultiplayer.Core
 
                                     playerObjects.Add(newPlayerId, new PlayerRep(name, packet.Value.SteamId));
 
+                                    RichPresence.SetActivity(
+                                        new Activity()
+                                        {
+                                            State = "Hosting a server",
+                                            Assets = { LargeImage = "jobsim" },
+                                            Secrets = new ActivitySecrets() { Join = SteamClient.SteamId.ToString() },
+                                            Party = new ActivityParty()
+                                            {
+                                                Id = partyId,
+                                                Size = new PartySize()
+                                                {
+                                                    CurrentSize = players.Count + 1,
+                                                    MaxSize = JobSimulatorMultiplayer.MAX_PLAYERS
+                                                }
+                                            }
+                                        });
+
                                     SceneTransitionMessage stm = new SceneTransitionMessage()
                                     {
                                         sceneName = SceneManager.GetActiveScene().name
@@ -153,7 +171,6 @@ namespace JobSimulatorMultiplayer.Core
                                         headPos = ppm.headPos,
                                         lHandPos = ppm.lHandPos,
                                         rHandPos = ppm.rHandPos,
-    
 
                                         headRot = ppm.headRot,
                                         lHandRot = ppm.lHandRot,
@@ -175,7 +192,6 @@ namespace JobSimulatorMultiplayer.Core
                             MelonModLogger.Log("Unknown message type: " + type.ToString());
                             break;
                     }
-
                 }
             }
 
@@ -195,16 +211,18 @@ namespace JobSimulatorMultiplayer.Core
                 ServerSendToAll(ppm, P2PSend.Unreliable);
             }
 
-            foreach (var pair in ObjectIDManager.objects)
+            // yo this causes a shit ton of these 
+            // `System.Collections.Generic.KeyNotFoundException: The given key was not present in the dictionary.`
+            // so i'm commenting it out for now
+            /*foreach (var pair in ObjectIDManager.objects)
             {
                 if (!syncedObjectCache.ContainsKey(pair.Value.gameObject))
                     syncedObjectCache.Add(pair.Value.gameObject, pair.Value.GetComponent<ServerSyncedObject>());
                 ServerSyncedObject sso = syncedObjectCache[pair.Value.gameObject];
                 if (sso.NeedsSync())
                 {
-
                 }
-            }
+            }*/
         }
 
         private PlayerRep GetPlayerRep(byte playerId)
@@ -283,6 +301,22 @@ namespace JobSimulatorMultiplayer.Core
             SteamNetworking.OnP2PConnectionFailed = OnP2PConnectionFailed;
 
             IsRunning = true;
+            RichPresence.SetActivity(
+                new Activity()
+                {
+                    Details = "Hosting a server",
+                    Assets = { LargeImage = "jobsim" },
+                    Secrets = new ActivitySecrets() { Join = SteamClient.SteamId.ToString() },
+                    Party = new ActivityParty()
+                    {
+                        Id = partyId,
+                        Size = new PartySize()
+                        {
+                            CurrentSize = 1,
+                            MaxSize = JobSimulatorMultiplayer.MAX_PLAYERS
+                        }
+                    }
+                });
         }
 
         public void StopServer()

@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Net.Configuration;
 using UnityEngine;
 using JobSimulatorMultiplayer.MonoBehaviours;
+using Discord;
 
 namespace JobSimulatorMultiplayer.Core
 {
@@ -26,7 +27,7 @@ namespace JobSimulatorMultiplayer.Core
 
         public void SetupRP()
         {
-            // RichPresence.OnJoin += RichPresence_OnJoin;
+            RichPresence.OnJoin += RichPresence_OnJoin;
         }
 
         public void RecreatePlayers()
@@ -225,6 +226,27 @@ namespace JobSimulatorMultiplayer.Core
                                     obj.transform.position = osm.position;
                                     obj.transform.rotation = osm.rotation;
                                 }
+                                break;
+                            }
+                        case MessageType.SetPartyId:
+                            {
+                                SetPartyIdMessage spid = new SetPartyIdMessage(msg);
+                                RichPresence.SetActivity(
+                                    new Activity()
+                                    {
+                                        State = "Connected to a server",
+                                        Assets = { LargeImage = "jobsim" },
+                                        Secrets = new ActivitySecrets() { Join = ServerId.ToString() },
+                                        Party = new ActivityParty()
+                                        {
+                                            Id = spid.partyId,
+                                            Size = new PartySize()
+                                            {
+                                                CurrentSize = 1,
+                                                MaxSize = JobSimulatorMultiplayer.MAX_PLAYERS
+                                            }
+                                        }
+                                    });
                                 break;
                             }
                     }
