@@ -156,12 +156,12 @@ namespace JobSimulatorMultiplayer.Core
                                     pr.handL.transform.rotation = oppm.lHandRot;
                                     pr.handR.transform.rotation = oppm.rHandRot;
 
-                                    MelonModLogger.Log($@"oppm-----------------    
+                                    /*MelonModLogger.Log($@"oppm-----------------    
                                     SteamID: {oppm.playerId}
                                     LeftHand: {oppm.lHandPos.ToString()}    
                                     RightHand: {oppm.rHandPos.ToString()}    
                                     Head: {oppm.headPos.ToString()}    
-                                    ---------------------");
+                                    ---------------------");*/
                                 }
 
                                 break;
@@ -229,7 +229,7 @@ namespace JobSimulatorMultiplayer.Core
 
                                 for (int i = 0; i < osm.objectsToSync.Count; i++)
                                 {
-                                    GameObject obj = ObjectIDManager.GetObject(osm.objectsToSync.Keys.ToList()[i]).gameObject; //now we gotta make the list
+                                    GameObject obj = ObjectIDManager.GetObject(osm.objectsToSync.Keys.ToList()[i]).gameObject;
 
                                     if (!obj.GetComponent<ServerSyncedObject>().NeedsSync())
                                         continue;

@@ -160,12 +160,12 @@ namespace JobSimulatorMultiplayer.Core
                                     pr.handL.transform.rotation = ppm.lHandRot;
                                     pr.handR.transform.rotation = ppm.rHandRot;
 
-                                    MelonModLogger.Log($@"---------------------    
+                                    /*MelonModLogger.Log($@"---------------------    
                                     SteamID: {pr.steamId.ToString()}
                                     LeftHand: {ppm.lHandPos.ToString()}    
                                     RightHand: {ppm.rHandPos.ToString()}    
                                     Head: {ppm.headPos.ToString()}    
-                                    ---------------------");
+                                    ---------------------");*/
 
                                     OtherPlayerPositionMessage relayOPPM = new OtherPlayerPositionMessage
                                     {
