@@ -1,7 +1,7 @@
 ﻿using Steamworks;
 using UnityEngine;
 
-namespace JobSimulatorMultiplayer.Networking 
+namespace JobSimulatorMultiplayer.Networking
 {
     public enum MessageType
     {
@@ -286,34 +286,6 @@ namespace JobSimulatorMultiplayer.Networking
 
             msg.WriteByte((byte)MessageType.IdRequest);
             msg.WriteUnicodeString(name);
-
-            return msg;
-        }
-    }
-
-    public class ObjectSyncMessage : INetworkMessage
-    {
-        public byte id;
-        public Vector3 position;
-        public Quaternion rotation;
-
-        public ObjectSyncMessage()
-        { }
-
-        public ObjectSyncMessage(P2PMessage msg)
-        {
-            id = msg.ReadByte();
-            position = msg.ReadVector3();
-            rotation = msg.ReadCompressedQuaternion();
-        }
-
-        public P2PMessage MakeMsg()
-        {
-            P2PMessage msg = new P2PMessage();
-            msg.WriteByte((byte)MessageType.ObjectSync);
-            msg.WriteByte(id);
-            msg.WriteVector3(position);
-            msg.WriteCompressedQuaternion(rotation);
 
             return msg;
         }

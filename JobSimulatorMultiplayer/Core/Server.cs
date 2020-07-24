@@ -155,13 +155,6 @@ namespace JobSimulatorMultiplayer.Core
                                     pr.handL.transform.position = ppm.lHandPos;
                                     pr.handR.transform.position = ppm.rHandPos;
 
-                                    /*MelonModLogger.Log($@"---------------------
-                                    SteamID: {pr.steamId.ToString()}
-                                    LeftHand: {pr.handL.transform.position.ToString()}
-                                    RightHand: {pr.handR.transform.position.ToString()}
-                                    Head: {pr.head.transform.position.ToString()}
-                                    ---------------------");*/
-
                                     pr.head.transform.rotation = ppm.headRot;
                                     pr.handL.transform.rotation = ppm.lHandRot;
                                     pr.handR.transform.rotation = ppm.rHandRot;
@@ -178,6 +171,24 @@ namespace JobSimulatorMultiplayer.Core
                                         playerId = ppm.playerId
                                     };
                                     ServerSendToAllExcept(relayOPPM, P2PSend.Unreliable, packet.Value.SteamId);
+                                }
+                                break;
+                            }
+                        case MessageType.ObjectSync:
+                            {
+                                ObjectSyncMessage osm = new ObjectSyncMessage(msg);
+                                GameObject obj = ObjectIDManager.GetObject(osm.worldItem).gameObject;
+
+                                MelonModLogger.Log($"got sync message with id: {obj.name}");
+
+                                if (!obj)
+                                {
+                                    MelonModLogger.LogError($"Couldn't find object with ID {obj.name}");
+                                }
+                                else
+                                {
+                                    obj.transform.position = osm.position;
+                                    obj.transform.rotation = osm.rotation;
                                 }
                                 break;
                             }
@@ -211,18 +222,43 @@ namespace JobSimulatorMultiplayer.Core
                 ServerSendToAll(ppm, P2PSend.Unreliable);
             }
 
-            // yo this causes a shit ton of these 
-            // `System.Collections.Generic.KeyNotFoundException: The given key was not present in the dictionary.`
-            // so i'm commenting it out for now
-            /*foreach (var pair in ObjectIDManager.objects)
+            /*foreach(var pair in ObjectIDManager.objects)
             {
-                if (!syncedObjectCache.ContainsKey(pair.Value.gameObject))
-                    syncedObjectCache.Add(pair.Value.gameObject, pair.Value.GetComponent<ServerSyncedObject>());
-                ServerSyncedObject sso = syncedObjectCache[pair.Value.gameObject];
-                if (sso.NeedsSync())
+                if (pair.Value.NeedsSync())
                 {
+                    pair.Value.lastSyncedPos = pair.Value.transform.position;
+                    pair.Value.lastSyncedRotation = pair.Value.transform.rotation;
+
+                    ObjectSyncMessage osm = new ObjectSyncMessage
+                    {
+                        id = pair.Key,
+                        position = pair.Value.transform.position,
+                        rotation = pair.Value.transform.rotation
+                    };
+
+                    ServerSendToAll(osm, P2PSend.Unreliable);
                 }
             }*/
+
+            foreach (var pair in ObjectIDManager.objects)
+            {
+                ServerSyncedObject sso = pair.Value;
+                if (sso.NeedsSync())
+                {
+                    // Sync it
+                    pair.Value.lastSyncedPos = pair.Value.transform.position;
+                    pair.Value.lastSyncedRotation = pair.Value.transform.rotation;
+
+                    ObjectSyncMessage osm = new ObjectSyncMessage
+                    {
+                        worldItem = pair.Key,
+                        position = pair.Value.transform.position,
+                        rotation = pair.Value.transform.rotation
+                    };
+
+                    ServerSendToAll(osm, P2PSend.Unreliable);
+                }
+            }
         }
 
         private PlayerRep GetPlayerRep(byte playerId)

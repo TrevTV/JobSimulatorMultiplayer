@@ -8,6 +8,16 @@ namespace JobSimulatorMultiplayer.MonoBehaviours
         public ServerSyncedObject(IntPtr ptr) : base(ptr) { }
         public Vector3 lastSyncedPos = Vector3.zero;
         public Quaternion lastSyncedRotation = Quaternion.identity;
+        private IDHolder _idHolder;
+        public IDHolder IDHolder
+        {
+            get
+            {
+                if (!_idHolder)
+                    _idHolder = GetComponent<IDHolder>();
+                return _idHolder;
+            }
+        }
 
         public bool NeedsSync()
         {

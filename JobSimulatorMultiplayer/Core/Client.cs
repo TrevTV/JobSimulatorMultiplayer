@@ -5,10 +5,10 @@ using Steamworks;
 using Steamworks.Data;
 using System;
 using System.Collections.Generic;
-using System.Net.Configuration;
 using UnityEngine;
 using JobSimulatorMultiplayer.MonoBehaviours;
 using Discord;
+using OwlchemyVR;
 
 namespace JobSimulatorMultiplayer.Core
 {
@@ -208,18 +208,20 @@ namespace JobSimulatorMultiplayer.Core
                             {
                                 IDAllocationMessage iam = new IDAllocationMessage(msg);
                                 GameObject obj = Util.GetObjectFromFullPath(iam.namePath);
-                                ObjectIDManager.AddObject(iam.allocatedId, obj.GetComponent<ServerSyncedObject>());
+                                ObjectIDManager.AddObject(obj.GetComponent<WorldItem>(), obj.GetComponent<ServerSyncedObject>());
                                 obj.AddComponent<IDHolder>().ID = iam.allocatedId;
                                 break;
                             }
                         case MessageType.ObjectSync:
                             {
                                 ObjectSyncMessage osm = new ObjectSyncMessage(msg);
-                                GameObject obj = ObjectIDManager.GetObject(osm.id).gameObject;
+                                GameObject obj = ObjectIDManager.GetObject(osm.worldItem).gameObject;
+
+                                MelonModLogger.Log($"got sync message with worlditem: {obj.name}");
 
                                 if (!obj)
                                 {
-                                    MelonModLogger.LogError($"Couldn't find object with ID {osm.id}");
+                                    MelonModLogger.LogError($"Couldn't find object with ID {obj.name}");
                                 }
                                 else
                                 {
@@ -251,13 +253,6 @@ namespace JobSimulatorMultiplayer.Core
                             }
                     }
                 }
-
-                /*MelonModLogger.Log($@"---------------------
-                                    SteamID: self
-                                    LeftHand: {GlobalStorage.Instance.MasterHMDAndInputController.TrackedLeftHandTransform.transform.position.ToString()}
-                                    RightHand: {GlobalStorage.Instance.MasterHMDAndInputController.TrackedRightHandTransform.position.ToString()}
-                                    Head: {GlobalStorage.Instance.MasterHMDAndInputController.Head.transform.position.ToString()}
-                                    ---------------------");*/
             }
             {
                 if (GlobalStorage.Instance.MasterHMDAndInputController != null)
@@ -275,6 +270,24 @@ namespace JobSimulatorMultiplayer.Core
 
                     SendToServer(ppm.MakeMsg(), P2PSend.Unreliable);
                 }
+
+                /*foreach (var pair in ObjectIDManager.objects)
+                {
+                    if (pair.Value.NeedsSync())
+                    {
+                        pair.Value.lastSyncedPos = pair.Value.transform.position;
+                        pair.Value.lastSyncedRotation = pair.Value.transform.rotation;
+
+                        ObjectSyncMessage osm = new ObjectSyncMessage
+                        {
+                            id = pair.Key,
+                            position = pair.Value.transform.position,
+                            rotation = pair.Value.transform.rotation
+                        };
+
+                        SendToServer(osm.MakeMsg(), P2PSend.Unreliable);
+                    }
+                }*/
             }
         }
 

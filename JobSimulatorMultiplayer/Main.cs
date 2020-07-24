@@ -7,6 +7,12 @@ using JobSimulatorMultiplayer.Representations;
 using UnhollowerRuntimeLib;
 using JobSimulatorMultiplayer.MonoBehaviours;
 using Discord;
+using Harmony;
+using System.Collections;
+using PSC;
+using System;
+using static UnityEngine.Object;
+using OwlchemyVR;
 
 namespace JobSimulatorMultiplayer
 {
@@ -39,6 +45,7 @@ namespace JobSimulatorMultiplayer
             // Register Prefs
             ModPrefs.RegisterCategory("MPMod", "Multiplayer Settings");
             ModPrefs.RegisterPrefString("MPMod", "HostSteamID", "0");
+            ModPrefs.RegisterPrefBool("MPMod", "ForceLargePlayspace", true);
 
             // Start Server Stuff
             SteamClient.Init(448280);
@@ -68,17 +75,11 @@ namespace JobSimulatorMultiplayer
                 if (Input.GetKeyDown(KeyCode.C))
                 {
                     client.Connect(ModPrefs.GetString("MPMod", "HostSteamID"));
-                    SteamFriends.SetRichPresence("steam_display", "Playing multiplayer on " + SceneManager.GetActiveScene().name);
-                    SteamFriends.SetRichPresence("connect", "--jobsimulator-multiplayer-id-connect " + client.ServerId);
-                    SteamFriends.SetRichPresence("steam_player_group", client.ServerId.ToString());
                 }
 
                 // If the user is not hosting, start their server
                 if (Input.GetKeyDown(KeyCode.S))
                 {
-                    SteamFriends.SetRichPresence("steam_display", "Hosting multiplayer on " + SceneManager.GetActiveScene().name);
-                    SteamFriends.SetRichPresence("connect", "--jobsimulator-multiplayer-id-connect " + SteamClient.SteamId);
-                    SteamFriends.SetRichPresence("steam_player_group", SteamClient.SteamId.ToString());
                     server.StartServer();
                 }
             }
@@ -108,16 +109,7 @@ namespace JobSimulatorMultiplayer
 
         public override void OnLevelWasInitialized(int level)
         {
-            #region Physic Sync
-            ObjectIDManager.objects.Clear();
-
-            var rbs = GameObject.FindObjectsOfType<Rigidbody>();
-            foreach (var rb in rbs)
-            {
-                var sso = rb.gameObject.AddComponent<ServerSyncedObject>();
-                try { ObjectIDManager.AddObject((byte)rb.GetInstanceID(), sso); } catch { }
-            }
-            #endregion
+            // MelonCoroutines.Start(PhysicSyncLoad());
         }
 
         public override void OnApplicationQuit()
@@ -127,6 +119,28 @@ namespace JobSimulatorMultiplayer
 
             if (server.IsRunning)
                 server.StopServer();
+        }
+
+        public IEnumerator PhysicSyncLoad()
+        {
+            yield return new WaitForSeconds(5);
+
+            ObjectIDManager.objects.Clear();
+
+            MelonModLogger.Log("Getting and adding all Rigidbodies");
+            var wids = FindObjectsOfType<WorldItem>();
+            foreach (var wid in wids)
+            {
+                if (wid.gameObject.transform.root.gameObject.name.Contains("HMD") || ObjectIDManager.objects.ContainsKey(wid))
+                    continue;
+                
+                var sso = wid.gameObject.AddComponent<ServerSyncedObject>();
+                var idHolder = wid.gameObject.AddComponent<IDHolder>();
+                //TODO: ID Generation, Syned across Host + Clients
+                idHolder.ID = 1;
+                ObjectIDManager.AddObject(wid, sso);
+                MelonModLogger.Log($"added {wid.gameObject.name}");
+            }
         }
     }
 }
