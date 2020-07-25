@@ -75,6 +75,11 @@ namespace JobSimulatorMultiplayer
                 {
                     server.StartServer();
                 }
+
+                if (Input.GetKeyDown(KeyCode.P))
+                {
+                    new PlayerRep("Dummy", SteamClient.SteamId);
+                }
             }
             else
             {

@@ -28,13 +28,9 @@ namespace JobSimulatorMultiplayer.Representations
             this.steamId = steamId;
 
             // Grab these body parts from the rigTransforms
-            MelonModLogger.Log("1");
             head = Instantiate(bundle.LoadAsset("Assets/head.prefab").Cast<GameObject>());
-            MelonModLogger.Log("2");
             handL = Instantiate(bundle.LoadAsset("Assets/leftHand.prefab").Cast<GameObject>());
-            MelonModLogger.Log("3");
             handR = Instantiate(bundle.LoadAsset("Assets/rightHand.prefab").Cast<GameObject>());
-            MelonModLogger.Log("4");
 
             // MelonCoroutines.Start(AsyncAvatarRoutine(steamId));
 
@@ -43,17 +39,14 @@ namespace JobSimulatorMultiplayer.Representations
             foreach (MeshRenderer smr in head.GetComponentsInChildren<MeshRenderer>())
                 foreach (Material m in smr.sharedMaterials)
                     try { m.shader = Shader.Find("Standard"); } catch { }
-            MelonModLogger.Log("5");
 
             foreach (MeshRenderer smr in handL.GetComponentsInChildren<MeshRenderer>())
                 foreach (Material m in smr.sharedMaterials)
                     try { m.shader = Shader.Find("Standard"); } catch { }
-            MelonModLogger.Log("6");
 
             foreach (MeshRenderer smr in handR.GetComponentsInChildren<MeshRenderer>())
                 foreach (Material m in smr.sharedMaterials)
                     try { m.shader = Shader.Find("Standard"); } catch { }
-            MelonModLogger.Log("7");
         }
 
         // Destroys the GameObjects stored inside this class, preparing this instance for deletion
