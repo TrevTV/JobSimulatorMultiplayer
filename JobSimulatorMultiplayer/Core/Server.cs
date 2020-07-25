@@ -184,7 +184,7 @@ namespace JobSimulatorMultiplayer.Core
                             }
                         case MessageType.ObjectSync:
                             {
-                                ObjectSyncMessage osm = new ObjectSyncMessage(msg); // wat, it's from the foreach one, let's make it a void
+                                ObjectSyncMessage osm = new ObjectSyncMessage(msg);
 
                                 for(int i=0; i < osm.objectsToSync.Count; i++)
                                 {
