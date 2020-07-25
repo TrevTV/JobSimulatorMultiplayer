@@ -313,13 +313,10 @@ namespace JobSimulatorMultiplayer.Core
                 if (!sso)
                     ObjectIDManager.objects.Remove(sso.IDHolder.ID);
 
-                if (sso.NeedsSync())
-                {
-                    // Sync it
-                    pair.Value.lastSyncedPos = pair.Value.transform.position;
-                    pair.Value.lastSyncedRotation = pair.Value.transform.rotation;
-                    osm.objectsToSync.Add(sso.IDHolder.ID, Tuple.Create(sso.gameObject.transform.position, sso.gameObject.transform.rotation));
-                }
+                // Sync it
+                pair.Value.lastSyncedPos = pair.Value.transform.position;
+                pair.Value.lastSyncedRotation = pair.Value.transform.rotation;
+                osm.objectsToSync.Add(sso.IDHolder.ID, Tuple.Create(sso.gameObject.transform.position, sso.gameObject.transform.rotation));
             }
             SendToServer(osm.MakeMsg(), P2PSend.Unreliable);
         }
