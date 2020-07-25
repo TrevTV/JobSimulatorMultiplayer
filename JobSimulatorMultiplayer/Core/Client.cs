@@ -231,9 +231,6 @@ namespace JobSimulatorMultiplayer.Core
                                 {
                                     GameObject obj = ObjectIDManager.GetObject(osm.objectsToSync.Keys.ToList()[i]).gameObject;
 
-                                    if (!obj.GetComponent<ServerSyncedObject>().NeedsSync())
-                                        continue;
-
                                     if (!obj)
                                     {
                                         MelonModLogger.LogError($"Couldn't find object with ID {obj.name}");
@@ -313,10 +310,13 @@ namespace JobSimulatorMultiplayer.Core
                 if (!sso)
                     ObjectIDManager.objects.Remove(sso.IDHolder.ID);
 
-                // Sync it
-                pair.Value.lastSyncedPos = pair.Value.transform.position;
-                pair.Value.lastSyncedRotation = pair.Value.transform.rotation;
-                osm.objectsToSync.Add(sso.IDHolder.ID, Tuple.Create(sso.gameObject.transform.position, sso.gameObject.transform.rotation));
+                if (sso.NeedsSync())
+                {
+                    // Sync it
+                    pair.Value.lastSyncedPos = pair.Value.transform.position;
+                    pair.Value.lastSyncedRotation = pair.Value.transform.rotation;
+                    osm.objectsToSync.Add(sso.IDHolder.ID, Tuple.Create(sso.gameObject.transform.position, sso.gameObject.transform.rotation));
+                }
             }
             SendToServer(osm.MakeMsg(), P2PSend.Unreliable);
         }
