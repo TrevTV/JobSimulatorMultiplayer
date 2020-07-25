@@ -13,7 +13,7 @@ namespace JobSimulatorMultiplayer
 {
     public static class BuildInfo
     {
-        public const string Name = "JobSimulatorMultiplayer"; // Name of the Mod.  (MUST BE SET)
+        public const string Name = "JobSimulatorMultiplayer_ALPHA_TESTING"; // Name of the Mod.  (MUST BE SET)
         public const string Author = "L4rs/TrevTV/Someone Somewhere"; // Author of the Mod.  (Set as null if none)
         public const string Company = null; // Company that made the Mod.  (Set as null if none)
         public const string Version = "0.0.1"; // Version of the Mod.  (MUST BE SET)
@@ -22,9 +22,6 @@ namespace JobSimulatorMultiplayer
 
     public class JobSimulatorMultiplayer : MelonMod
     {
-        // note of reference branch
-        // https://github.com/someonesomewheredev/boneworks-mp/tree/accessories
-
         public const int MAX_PLAYERS = 16;
         public const byte PROTOCOL_VERSION = 30;
 
@@ -45,6 +42,7 @@ namespace JobSimulatorMultiplayer
             // Start Server Stuff
             SteamClient.Init(448280);
 
+            MelonModLogger.LogWarning("ALPHA TESTING BUILD");
             MelonModLogger.Log($"Multiplayer initialising with protocol version {PROTOCOL_VERSION}.");
 
             SteamNetworking.AllowP2PPacketRelay(true);
