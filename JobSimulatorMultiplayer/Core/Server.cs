@@ -190,9 +190,6 @@ namespace JobSimulatorMultiplayer.Core
                                 {
                                     GameObject obj = ObjectIDManager.GetObject(osm.objectsToSync.Keys.ToList()[i]).gameObject;
 
-                                    if (!obj.GetComponent<ServerSyncedObject>().NeedsSync())
-                                        continue;
-
                                     if (!obj)
                                     {
                                         MelonModLogger.LogError($"Couldn't find object with ID {obj.name}");
