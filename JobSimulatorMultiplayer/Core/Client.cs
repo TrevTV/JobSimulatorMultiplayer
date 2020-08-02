@@ -11,6 +11,8 @@ using Discord;
 using OwlchemyVR;
 using System.Linq;
 using Il2CppSystem.Diagnostics.Tracing;
+using System.Collections;
+using static UnityEngine.Object;
 
 namespace JobSimulatorMultiplayer.Core
 {
@@ -67,6 +69,8 @@ namespace JobSimulatorMultiplayer.Core
 
             SteamNetworking.OnP2PSessionRequest = OnP2PSessionRequest;
             SteamNetworking.OnP2PConnectionFailed = OnP2PConnectionFailed;
+
+            MelonCoroutines.Start(PhysicSyncLoad());
         }
 
         private void OnP2PConnectionFailed(SteamId id, P2PSessionError err)
@@ -226,6 +230,7 @@ namespace JobSimulatorMultiplayer.Core
                         case MessageType.ObjectSync:
                             {
                                 ObjectSyncMessage osm = new ObjectSyncMessage(msg);
+                                MelonModLogger.Log($"Received object sync");
 
                                 for (int i = 0; i < osm.objectsToSync.Count; i++)
                                 {
@@ -242,7 +247,8 @@ namespace JobSimulatorMultiplayer.Core
                                     }
 
                                     MelonModLogger.Log($"got sync message with id: {obj.name}");
-                                }
+                                } //oh, yeah
+                                // but that's in the loop and won't bring if it doesn't deserialize the objects correctly
                                 break;
                             }
                         case MessageType.SetPartyId:
@@ -286,7 +292,10 @@ namespace JobSimulatorMultiplayer.Core
                     SendToServer(ppm.MakeMsg(), P2PSend.Unreliable);
                 }
 
-                SendSync();
+                foreach (var id in ObjectIDManager.objects.Keys)
+                {
+                    ObjectIDManager.GetObject(id).gameObject.GetComponent<Rigidbody>().isKinematic = true;
+                }
             }
         }
 
@@ -301,24 +310,45 @@ namespace JobSimulatorMultiplayer.Core
             SteamNetworking.SendP2PPacket(ServerId, msgBytes, msgBytes.Length, 0, send);
         }
 
-        private void SendSync()
+        private void SendSync() //logging is extremely slow
         {
             ObjectSyncMessage osm = new ObjectSyncMessage();
             foreach (var pair in ObjectIDManager.objects)
             {
                 ServerSyncedObject sso = pair.Value;
-                if (!sso)
-                    ObjectIDManager.objects.Remove(sso.IDHolder.ID);
 
-                if (sso.NeedsSync())
+                if (sso.transform.hasChanged)
                 {
+                    sso.transform.hasChanged = false;
                     // Sync it
-                    pair.Value.lastSyncedPos = pair.Value.transform.position;
-                    pair.Value.lastSyncedRotation = pair.Value.transform.rotation;
+                    //pair.Value.lastSyncedPos = pair.Value.transform.position;
+                    //pair.Value.lastSyncedRotation = pair.Value.transform.rotation;
                     osm.objectsToSync.Add(sso.IDHolder.ID, Tuple.Create(sso.gameObject.transform.position, sso.gameObject.transform.rotation));
                 }
             }
             SendToServer(osm.MakeMsg(), P2PSend.Unreliable);
+        }
+
+        public IEnumerator PhysicSyncLoad()
+        {
+            ObjectIDManager.objects.Clear();
+
+            yield return new WaitForSeconds(3);
+
+            MelonModLogger.Log("Getting and adding all Rigidbodies");
+            var rbs = FindObjectsOfType<Rigidbody>();
+            foreach (var rb in rbs)
+            {
+                if (rb.gameObject.transform.root.gameObject.name.Contains("HMD") || rb.isKinematic == true)
+                    continue;
+
+                var sso = rb.gameObject.AddComponent<ServerSyncedObject>();
+                var idHolder = rb.gameObject.AddComponent<IDHolder>();
+
+                idHolder.ID = ObjectIDManager.GenerateID(sso);
+                ObjectIDManager.AddObject(idHolder.ID, sso);
+                MelonModLogger.Log($"added {rb.gameObject.name} with generated id {idHolder.ID.ToString()}");
+            }
         }
     }
 }

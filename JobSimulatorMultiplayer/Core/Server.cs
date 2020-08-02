@@ -6,10 +6,12 @@ using MelonLoader;
 using Steamworks;
 using Steamworks.Data;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using static UnityEngine.Object;
 
 namespace JobSimulatorMultiplayer.Core
 {
@@ -199,7 +201,6 @@ namespace JobSimulatorMultiplayer.Core
                                         obj.transform.position = osm.objectsToSync.Values.ToList()[i].Item1;
                                         obj.transform.rotation = osm.objectsToSync.Values.ToList()[i].Item2;
                                     }
-
                                     MelonModLogger.Log($"got sync message with id: {obj.name}");
                                 }
                                 break;
@@ -344,6 +345,8 @@ namespace JobSimulatorMultiplayer.Core
                         }
                     }
                 });
+
+            MelonCoroutines.Start(PhysicSyncLoad());
         }
 
         public void StopServer()
@@ -413,21 +416,45 @@ namespace JobSimulatorMultiplayer.Core
             SteamNetworking.SendP2PPacket(id, bytes, bytes.Length, 0, send);
         }
 
-        private void SendSync()
+        private void SendSync() //logging is extremely slow
         {
             ObjectSyncMessage osm = new ObjectSyncMessage();
             foreach (var pair in ObjectIDManager.objects)
             {
                 ServerSyncedObject sso = pair.Value;
-                if (sso.NeedsSync())
+
+                if (sso.transform.hasChanged)
                 {
+                    sso.transform.hasChanged = false;
                     // Sync it
-                    pair.Value.lastSyncedPos = pair.Value.transform.position;
-                    pair.Value.lastSyncedRotation = pair.Value.transform.rotation;
+                    //pair.Value.lastSyncedPos = pair.Value.transform.position;
+                    //pair.Value.lastSyncedRotation = pair.Value.transform.rotation;
                     osm.objectsToSync.Add(sso.IDHolder.ID, Tuple.Create(sso.gameObject.transform.position, sso.gameObject.transform.rotation));
                 }
-            }
+            }          
             ServerSendToAll(osm, P2PSend.Unreliable);
+        }
+
+        public IEnumerator PhysicSyncLoad()
+        {
+            ObjectIDManager.objects.Clear();
+
+            yield return new WaitForSeconds(3);
+
+            MelonModLogger.Log("Getting and adding all Rigidbodies");
+            var rbs = FindObjectsOfType<Rigidbody>();
+            foreach (var rb in rbs)
+            {
+                if (rb.gameObject.transform.root.gameObject.name.Contains("HMD") || rb.isKinematic == true)
+                    continue;
+
+                var sso = rb.gameObject.AddComponent<ServerSyncedObject>();
+                var idHolder = rb.gameObject.AddComponent<IDHolder>();
+
+                idHolder.ID = ObjectIDManager.GenerateID(sso);
+                ObjectIDManager.AddObject(idHolder.ID, sso);
+                MelonModLogger.Log($"added {rb.gameObject.name} with generated id {idHolder.ID.ToString()}");
+            }
         }
     }
 }

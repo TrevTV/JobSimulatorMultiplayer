@@ -19,7 +19,8 @@ namespace JobSimulatorMultiplayer.Networking
 
         public ObjectSyncMessage(P2PMessage msg)
         {
-            for(int i=0; i < objectsToSync.Count; i++)
+            int objCount = msg.ReadByte();
+            for(int i=0; i < objCount; i++)
             {
                 objectsToSync.Add(msg.ReadByte(), Tuple.Create(msg.ReadVector3(), msg.ReadCompressedQuaternion()));
             }

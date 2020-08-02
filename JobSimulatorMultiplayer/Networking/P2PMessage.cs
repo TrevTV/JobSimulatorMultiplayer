@@ -342,6 +342,7 @@ namespace JobSimulatorMultiplayer.Networking
 
         public void WriteSyncDict(Dictionary<int, Tuple<Vector3, Quaternion>> dict)
         {
+            WriteByte((byte)dict.Count);
             foreach (var pair in dict)
             {
                 WriteByte((byte)pair.Key);

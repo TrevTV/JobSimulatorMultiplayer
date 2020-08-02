@@ -107,7 +107,7 @@ namespace JobSimulatorMultiplayer
 
         public override void OnLevelWasInitialized(int level)
         {
-            MelonCoroutines.Start(PhysicSyncLoad());
+            //MelonCoroutines.Start(PhysicSyncLoad());
         }
 
         public override void OnApplicationQuit()
@@ -131,7 +131,9 @@ namespace JobSimulatorMultiplayer
             {
                 if (rb.gameObject.transform.root.gameObject.name.Contains("HMD") || rb.isKinematic == true)
                     continue;
-                
+
+                rb.isKinematic = true;
+
                 var sso = rb.gameObject.AddComponent<ServerSyncedObject>();
                 var idHolder = rb.gameObject.AddComponent<IDHolder>();
 

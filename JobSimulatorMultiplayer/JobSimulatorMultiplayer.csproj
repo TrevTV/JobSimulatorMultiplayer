@@ -60,6 +60,10 @@
     <Reference Include="UnhollowerRuntimeLib">
       <HintPath>D:\Program Files (x86)\Steam\steamapps\common\Job Simulator\MelonLoader\Managed\UnhollowerRuntimeLib.dll</HintPath>
     </Reference>
+    <Reference Include="Unity.TextMeshPro, Version=3.7.1.6, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>D:\Program Files (x86)\Steam\steamapps\common\Job Simulator\MelonLoader\Managed\Unity.TextMeshPro.dll</HintPath>
+    </Reference>
     <Reference Include="UnityEngine.AssetBundleModule">
       <HintPath>D:\Program Files (x86)\Steam\steamapps\common\Job Simulator\MelonLoader\Managed\UnityEngine.AssetBundleModule.dll</HintPath>
     </Reference>
