@@ -453,7 +453,7 @@ namespace JobSimulatorMultiplayer.Core
 
                 idHolder.ID = ObjectIDManager.GenerateID(sso);
                 ObjectIDManager.AddObject(idHolder.ID, sso);
-                MelonModLogger.Log($"added {rb.gameObject.name} with generated id {idHolder.ID.ToString()}");
+                // MelonModLogger.Log($"added {rb.gameObject.name} with generated id {idHolder.ID.ToString()}");
             }
         }
     }

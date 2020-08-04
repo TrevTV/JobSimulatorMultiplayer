@@ -13,6 +13,7 @@ using System.Linq;
 using Il2CppSystem.Diagnostics.Tracing;
 using System.Collections;
 using static UnityEngine.Object;
+using Harmony;
 
 namespace JobSimulatorMultiplayer.Core
 {
@@ -66,6 +67,7 @@ namespace JobSimulatorMultiplayer.Core
             SteamNetworking.SendP2PPacket(ServerId, msg.GetBytes());
 
             isConnected = true;
+            JobSimulatorMultiplayer.isClient = true;
 
             SteamNetworking.OnP2PSessionRequest = OnP2PSessionRequest;
             SteamNetworking.OnP2PConnectionFailed = OnP2PConnectionFailed;
@@ -339,15 +341,22 @@ namespace JobSimulatorMultiplayer.Core
             var rbs = FindObjectsOfType<Rigidbody>();
             foreach (var rb in rbs)
             {
-                if (rb.gameObject.transform.root.gameObject.name.Contains("HMD") || rb.isKinematic == true)
+                if (rb.gameObject.transform.root.gameObject.name.Contains("HMD")
+                    || rb.isKinematic == true
+                    || rb.gameObject.GetComponent<ButtonController>()
+                    || rb.gameObject.GetComponent<MechanicalPushButtonController>())
+                {
+                    Features.PatchTools.blacklist.Add(rb.GetInstanceID());
                     continue;
-
+                }
+                 
                 var sso = rb.gameObject.AddComponent<ServerSyncedObject>();
                 var idHolder = rb.gameObject.AddComponent<IDHolder>();
 
                 idHolder.ID = ObjectIDManager.GenerateID(sso);
                 ObjectIDManager.AddObject(idHolder.ID, sso);
-                MelonModLogger.Log($"added {rb.gameObject.name} with generated id {idHolder.ID.ToString()}");
+
+                // MelonModLogger.Log($"added {rb.gameObject.name} with generated id {idHolder.ID.ToString()}");
             }
         }
     }

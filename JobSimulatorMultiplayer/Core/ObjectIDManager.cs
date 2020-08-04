@@ -14,7 +14,6 @@ namespace JobSimulatorMultiplayer.Core
     public static class ObjectIDManager
     {
         public static Dictionary<int, ServerSyncedObject> objects = new Dictionary<int, ServerSyncedObject>();
-        private static int lastID = 0;
 
         public static void Reset()
         {
